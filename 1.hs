@@ -7,10 +7,10 @@ input1 :: IO [Int]
 input1 = map read . lines <$> readFile "/home/nwest/Projects/AoC/1"
 
 fuel :: Int -> Int
-fuel = (flip (-) 2) . (flip quot) 3
+fuel = flip (-) 2 . flip quot 3
 
 allFuel :: Int -> Int
-allFuel i | f > 0 = f + (allFuel f)
+allFuel i | f > 0 = f + allFuel f
           | otherwise = f
         where f = fuel i 
 
@@ -31,7 +31,7 @@ cleanCSV = map read . splitOn ","
 crunch2 :: (Int -> Int -> Int) -> [Int] -> [Int] -> [Int]
 crunch2 f [a, b, c] xs = let a' = head . drop a $ xs
                              b' = head . drop b $ xs
-                         in take c xs ++ (f a' b') : drop (succ c) xs
+                         in take c xs ++ f a' b' : drop (succ c) xs
 crunch2 _     _     xs = xs
 
 compute2 :: Int -> [Int] -> [Int]
@@ -44,6 +44,7 @@ compute2 o xs | a == 1  = compute2 (succ o) (crunch2 (+) inst xs)
 resetComp :: Int -> Int -> [Int] -> [Int]
 resetComp _  _ [] = []
 resetComp a b (x:xs) = x : a : b : drop 2 xs
+
 test2 :: [Int]
 test2 = [1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50]
 
@@ -55,7 +56,7 @@ comp2b xs (a, b) = ((a, b), head (compute2 0 (resetComp a b xs)))
 
 num2b :: Int
 num2b = let possible = (,) <$> [0..99] <*> [0..99] -- [(x, y) | x <- [0..99], y <- [0..99]]
-            allMap = map (comp2b input2) $ possible
+            allMap = map (comp2b input2) possible
             ((n, v), _) = head . filter (\(_, a) -> a == 19690720)  $ allMap
         in (100 * n) + v
 
