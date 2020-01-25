@@ -4,7 +4,7 @@
 import qualified Data.Text as T
 import Data.Set (Set)
 import qualified Data.Set as Set
-import Data.List (foldl')
+import Data.List (foldl', group, sort)
 
 
 input1 :: IO [Int]
@@ -119,4 +119,21 @@ num3b = do
             lengths = Set.map (\coord -> distTo coord wireA + distTo coord wireB) intersections
         return $ Set.findMin lengths
             
+-------------------
+
+input4 :: [Int]
+input4 = [246515..739105]
+
+increasing :: Int -> Bool
+increasing x = x == (read . sort . show $ x)
+
+firstSort4 :: [Int]
+firstSort4 = filter increasing . filter (\n -> (length . group . show $ n) < 6) $ input4
+
+num4 :: Int
+num4 = length firstSort4
+
+num4b :: Int
+num4b = length . filter (\x -> 2 `elem` (map length . group . show $ x) ) $ firstSort4
+
 -------------------
