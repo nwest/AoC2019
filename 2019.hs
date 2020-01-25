@@ -85,22 +85,38 @@ route start (dir, moves) | dir == 'U' = f up
                          | dir == 'L' = f left
                          | dir == 'R' = f right
                          | otherwise = []
-                         where f g = start : reverse (g moves start)
-                               up    n (a, b) = foldl' (\xs x -> (a, b + x): xs) [] [1..n]
-                               down  n (a, b) = foldl' (\xs x -> (a, b - x): xs) [] [1..n]
-                               left  n (a, b) = foldl' (\xs x -> (a - x, b): xs) [] [1..n]
-                               right n (a, b) = foldl' (\xs x -> (a + x, b): xs) [] [1..n]
+                         where f g = reverse (g moves start)
+                               move h n = foldl' h [] [1..n]
+                               up    n (a, b) = move (\xs x -> (a, b + x) : xs) n
+                               down  n (a, b) = move (\xs x -> (a, b - x) : xs) n
+                               left  n (a, b) = move (\xs x -> (a - x, b) : xs) n
+                               right n (a, b) = move (\xs x -> (a + x, b) : xs) n
 
-wireCoords :: (Int, Int) -> [WireRoute] -> WireCoords
-wireCoords c = Set.fromList . foldl' (\xs x -> xs ++ route (last xs) x) [c]
+wireCoords :: (Int, Int) -> [WireRoute] -> [(Int, Int)]
+wireCoords c = foldl' (\xs x -> xs ++ route (last xs) x) [c]
 
 manhattan :: (Int, Int) -> (Int, Int) -> Int
 manhattan (a, b) (c, d) = abs(a - c) + abs(b - d)
 
+distTo :: Eq a => a -> [a] -> Int
+distTo _ [] = 0
+distTo a (x:xs) | a == x    = 0
+                | otherwise = 1 + distTo a xs
+
 num3 :: IO Int
 num3 = do
-       wireA <- wireCoords (0,0) . head <$> input3
-       wireB <- wireCoords (0,0) . last <$> input3
+       wireA <- Set.fromList . wireCoords (0,0) . head <$> input3
+       wireB <- Set.fromList . wireCoords (0,0) . last <$> input3
        let intersections = Set.delete (0,0) (Set.intersection wireA wireB)
            distances = Set.map (manhattan (0,0)) intersections
        return $ Set.findMin distances
+
+num3b :: IO Int
+num3b = do
+        wireA <- wireCoords (0,0) . head <$> input3
+        wireB <- wireCoords (0,0) . last <$> input3
+        let intersections = Set.delete (0,0) $ Set.intersection (Set.fromList wireA) (Set.fromList wireB)
+            lengths = Set.map (\coord -> distTo coord wireA + distTo coord wireB) intersections
+        return $ Set.findMin lengths
+            
+-------------------
